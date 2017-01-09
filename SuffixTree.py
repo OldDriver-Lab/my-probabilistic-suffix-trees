@@ -31,7 +31,7 @@ class Tree(object):
                 node.count = node.count + 1
                 print("node.count:", node.count)
 
-    def countSeq(self, sequence):
+    def count_seq(self, sequence):
         '''计算序列出现的次数
         '''
         node = self.root
@@ -44,10 +44,8 @@ class Tree(object):
 
 
 def gen_tree(input_file, output_file):
-    '''生成tree树
-    '''
+    '''生成Tree'''
     tree = Tree()
-
     with open(input_file) as f:
         for line in f:
             # 增加'$'用来区别是否是完整后缀
@@ -56,16 +54,29 @@ def gen_tree(input_file, output_file):
                 l = line[i:]
                 tree.add(l)
 
+    # 生成Node概率
+    with open(input_file) as f:
+        source_list = []
+        for line in f:  # 获取去重的序列并保持原顺序
+            source_list += list(line)
+        str_list = list(set(source_list))
+        str_list.sort(key=source_list.index)
+        if '\n' in str_list:
+            str_list.remove()
+        print(str_list)
+
     # with open(output_file, 'wb') as f:
-    #     pickle.dump(tree, f)
+    # pickle.dump(tree, f)
 
     return tree
 
 
 if __name__ == '__main__':
-    txt = 'H:\\testfile\\pst_data.txt'
-    pkl = 'H:\\testfile\\pst_result.pkl'
-    t = gen_tree(txt, pkl)
-    pkl_file = open(pkl, 'rb')
+    txt = 'pst_data.txt'
+    pkl = 'pst_result.pkl'
+    tree = gen_tree(txt, pkl)
+    # print(tree.count_seq('ANA'))
+
+    # pkl_file = open(pkl, 'rb')
     # result_tree = pickle.load(pkl_file)
     # print(result_tree)
