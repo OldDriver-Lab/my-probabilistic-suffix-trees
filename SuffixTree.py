@@ -53,8 +53,7 @@ def gen_tree(input_file, output_file):
     with open(input_file) as f:
         for line in f:
             # 增加'$'用来区别是否是完整后缀
-            # line = line.strip() + '$'
-            line = line.strip()
+            line = line.strip() + '$'
             for i in range(len(line)):
                 l = line[i:]
                 tree.add(l)
@@ -82,7 +81,6 @@ def gen_tree(input_file, output_file):
 
     print(node.children.keys())
     # 此处已经计算出单个Node的数据量(即分支量,概率计算的被除数)
-    print(node.children['A'].children['N'].totalchild)
     # with open(output_file, 'wb') as f:
     # pickle.dump(tree, f)
 
