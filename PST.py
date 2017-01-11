@@ -98,14 +98,12 @@ class Tree(object):
 
                 if compute_pro(candidate_r, sequence) > self.P_min:
                     # 此时candidate_r为出现概率大于P_min的候选节点
-                    print("********符合条件:", candidate_r, "树深度:", len(candidate_r), "节点名：", node.name)
                     # 切换支点
                     print("上次处理：", self.pre_node_len, "本次长度:", len(candidate_r))
+                    if node is not self.root and (self.pre_node_len > len(candidate_r)):  # 如果上一次保存候选序列的长度大于该序列长度，说明向上回溯
+                        node = node.pre_node
                     self.pre_node_len = len(candidate_r)
-                    # if self.pre_node_len > len(candidate_r):  # 如果上一次保存候选序列的长度大于该序列长度，说明向上回溯
-                    #     node = node.pre_node
-                    # else:
-                    #     self.pre_node_len = len(candidate_r)
+                    print("********符合条件:", candidate_r, "树深度:", len(candidate_r), "节点名：", node.name)
                     child = TreeNode()
                     child.pre_node = node
                     child.name = candidate_r
@@ -159,4 +157,4 @@ if __name__ == '__main__':
     txt = 'pst_data.txt'
     pkl = 'pst_result.pkl'
     tree = gen_tree(txt)
-    print(tree.root.children['a'])
+    print(tree.root.children['t'].children['ct'].children)
