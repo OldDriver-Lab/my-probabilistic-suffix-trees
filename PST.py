@@ -1,5 +1,6 @@
 # encoding:utf-8
 import re
+from random import choice
 
 '''构建概率后缀树
 '''
@@ -12,6 +13,52 @@ class TreeNode(object):
         self.children = {}
         self.totalchild = 0  # 统计node子节点个数
         self.probability_vector = {}  # 概率向量
+        self.pre_pv = {}  # 上一节点的概率向量s
+
+
+class Tree2(object):
+    def __init__(self):
+        self.root = TreeNode()
+        self.P_min = 0.00  # 入树概率阈值
+        self.gamma = 0.01  # 节点转移概率阈值
+        self.alpha = 0.01  # 另一个阈值 在判断候选节点时起作用
+        self.L = 2  # 树最大深度
+        self.deepth = 0  # 树深度
+
+    def build(self, sequence):
+        print("------------------ line:", sequence, " ------------------")
+        node = self.root
+        seq_list = list(sequence)
+        dis_seq_list = list(set(seq_list))
+        dis_seq_list.sort(key=list(sequence).index)
+        for i in range(self.L):
+            # 此时获取到去重后的字符数组，c为单个字符
+            for c in dis_seq_list:
+                if compute_pro(c, seq_list) > self.P_min:  # 第一步验证候选节点，如果频率超过P_min，则作为候选节点
+                    if c not in node.children:  # c不在子节点中
+                        for b in dis_seq_list:  # 生成该节点的pre_pv list
+                            node.pre_pv[b] = compute_pro(b, seq_list)
+                        print("pre_pv", node.pre_pv)
+                        s = c
+                        print("候选节点：", s)
+                        s_suffix_list = get_suffix(s, 2, sequence)
+
+                        # 判断当前候选节点s是否符合入选条件
+                        for sigma in dis_seq_list:
+                            sigma_pro = compute_pro(sigma, s_suffix_list)
+                            if sigma_pro > self.gamma:  # 存在一个sigma属于Σ，P(sigma|s)>gamma
+                                print("sigma", sigma, "sigma_pro:", sigma_pro)
+                                if sigma_pro / node.pre_pv[sigma] > self.alpha or sigma_pro / node.pre_pv[
+                                    sigma] > 1 / self.alpha:
+                                    # 同时满足条件P(sigma|s)/P(sigma|suff(s))>alpha or P(sigma|s)/P(sigma|suff(s))<(1/alpha)
+                                    print(s, '满足新建节点条件')
+                                    child = TreeNode()  # 满足条件后，添加该节点到树中
+                                    node.children[s] = child
+                                    node = child
+                                    self.deepth += 1
+                                    break
+                        print('self.deepth', self.deepth)
+                        print("-----------------------ok-----------------------")
 
 
 class Tree(object):
@@ -20,56 +67,65 @@ class Tree(object):
         self.P_min = 0.00  # 入树概率阈值
         self.gamma = 0.01  # 节点转移概率阈值
         self.alpha = 0.01  # 另一个阈值 在判断候选节点时起作用
-        self.L = 5  # 树最大深度
+        self.L = 2  # 树最大深度，即L阶PST
+        self.current_deepth = 1  # 当前树深度
 
     def build(self, sequence):
-        print("------------------ line:", sequence, " ------------------")
-        node = self.root
-        node.totalchild += 1
+        print("------------------ sequence:", sequence, " ------------------")
         seq_list = list(sequence)
         dis_seq_list = list(set(seq_list))
         dis_seq_list.sort(key=list(sequence).index)
-        # 此时获取到去重后的字符数组，c为单个字符
-        for c in dis_seq_list:
-            # 第一步验证候选节点，如果频率超过P_min，则作为候选节点
-            if compute_pro(c, seq_list) > self.P_min:
-                print(compute_pro(c, seq_list))
+        dis_seq_list.remove('$')
+        print('获取到有序去重字符集:', dis_seq_list)
+
+        def add_pst(node, sequence, candidate_list):
+            if len(candidate_list) == 0:
+                candidate_list = dis_seq_list
+            for candidate_r in candidate_list:
+                if compute_pro(candidate_r, sequence) > self.P_min:
+                    print("********符合条件:", candidate_r, "**********")
+                    q = []
+                    for x in dis_seq_list:
+                        str_x_r = x + candidate_r
+                        q.append(str_x_r)
+                    str_x_r = str_x_r[1:]
+                    print(candidate_r, q)
+                    if self.current_deepth < self.L:
+                        self.current_deepth += 1
+                        add_pst(root_node, sequence, q)
+
+        root_node = self.root
+        add_pst(root_node, sequence, [])
 
 
-def compute_pro(s, list):
-    return float(list.count(s)) / float(len(list))
+def compute_pro(s, total_sequence):
+    '''计算s在total_sequence_list中出现的概率'''
+    return float(total_sequence.count(s)) / float(len(total_sequence.replace('$', '')))
 
 
 def get_suffix(seq, length, str):
     '''返回在str中，长度为1，起始字符为seq的字符串'''
     for i in range(length - 1):
         seq = seq + '.'
-    print(seq)
     result = re.findall(seq, str)
     result = map(lambda x: x[-1], result)
     return list(result)
 
 
-def gen_tree(input_file, output_file):
+def gen_tree(input_file):
     '''生成PST'''
     tree = Tree()
     with open(input_file) as f:
+        total_sequence = ''
         for line in f:
             # 增加'$'用来区别是否是完整后缀  todo:PST是否需要？
-            # line = line.strip() + '$'
-            line = line.strip()
-            tree.build(line)
-
+            line = line.strip() + '$'
+            total_sequence += line
+        tree.build(total_sequence)
     return tree
 
 
 if __name__ == '__main__':
     txt = 'pst_data.txt'
     pkl = 'pst_result.pkl'
-    tree = gen_tree(txt, pkl)
-
-    # print(tree.count_seq('ANA'))
-
-    # pkl_file = open(pkl, 'rb')
-    # result_tree = pickle.load(pkl_file)
-    # print(result_tree)
+    tree = gen_tree(txt)

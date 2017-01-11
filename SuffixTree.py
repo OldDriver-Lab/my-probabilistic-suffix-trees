@@ -88,7 +88,7 @@ def gen_tree(input_file, output_file):
 
 
 if __name__ == '__main__':
-    txt = 'pst_data.txt'
+    txt = 'st_data.txt'
     pkl = 'pst_result.pkl'
     tree = gen_tree(txt, pkl)
     # print(tree.count_seq('ANA'))
