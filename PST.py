@@ -14,6 +14,7 @@ class TreeNode(object):
         self.totalchild = 0  # 统计node子节点个数
         self.probability_vector = {}  # 概率向量
         self.pre_pv = {}  # 上一节点的概率向量s
+        self.pre_node = None  # 上一节点
 
 
 class Tree2(object):
@@ -67,8 +68,9 @@ class Tree(object):
         self.P_min = 0.00  # 入树概率阈值
         self.gamma = 0.01  # 节点转移概率阈值
         self.alpha = 0.01  # 另一个阈值 在判断候选节点时起作用
-        self.L = 2  # 树最大深度，即L阶PST
+        self.L = 3  # 树最大深度L，即L阶PST
         self.current_deepth = 1  # 当前树深度
+        self.pre_node_len = 0  # 判断叶节点是否向上回溯，该值为上一次处理序列的长度
 
     def build(self, sequence):
         print("------------------ sequence:", sequence, " ------------------")
@@ -78,21 +80,49 @@ class Tree(object):
         dis_seq_list.remove('$')
         print('获取到有序去重字符集:', dis_seq_list)
 
+        '''
+        add_pst为递归函数，该函数的主要作用是递归构造PST
+        需要传入当前node节点，总序列sequence,以及候选节点list：candidate_list
+        '''
+
         def add_pst(node, sequence, candidate_list):
             if len(candidate_list) == 0:
+                # 如果是根节点传入，将候选节点设置为去重后的字符集
                 candidate_list = dis_seq_list
             for candidate_r in candidate_list:
+                # 遍历候选字符列表
+                if candidate_r in dis_seq_list:
+                    print("又一次从根节点开始,树深需要置为1,同时node恢复为root")
+                    self.current_deepth = 1
+                    node = self.root
+
                 if compute_pro(candidate_r, sequence) > self.P_min:
-                    print("********符合条件:", candidate_r, "**********")
+                    # 此时candidate_r为出现概率大于P_min的候选节点
+                    print("********符合条件:", candidate_r, "树深度:", len(candidate_r), "节点名：", node.name)
+                    # 切换支点
+                    print("上次处理：", self.pre_node_len, "本次长度:", len(candidate_r))
+                    self.pre_node_len = len(candidate_r)
+                    # if self.pre_node_len > len(candidate_r):  # 如果上一次保存候选序列的长度大于该序列长度，说明向上回溯
+                    #     node = node.pre_node
+                    # else:
+                    #     self.pre_node_len = len(candidate_r)
+                    child = TreeNode()
+                    child.pre_node = node
+                    child.name = candidate_r
+                    node.children[candidate_r] = child
+                    node = child
                     q = []
                     for x in dis_seq_list:
+                        # 给每一个候选节点增加前缀，增加的前缀为去重字符集dis_seq_list的遍历
+                        str_x_r = ''
                         str_x_r = x + candidate_r
                         q.append(str_x_r)
-                    str_x_r = str_x_r[1:]
+                    # 此时获得的q，是通过合法候选字符（P>P_min）构造好的前缀数组
                     print(candidate_r, q)
-                    if self.current_deepth < self.L:
-                        self.current_deepth += 1
-                        add_pst(root_node, sequence, q)
+                    if len(candidate_r) < self.L:  # if self.current_deepth < self.L:
+                        # 树在本分支上的深度自增，步长为1 但此时用的是字符集长度计算
+                        # self.current_deepth += 1
+                        add_pst(node, sequence, q)
 
         root_node = self.root
         add_pst(root_node, sequence, [])
@@ -129,3 +159,4 @@ if __name__ == '__main__':
     txt = 'pst_data.txt'
     pkl = 'pst_result.pkl'
     tree = gen_tree(txt)
+    print(tree.root.children['a'])
