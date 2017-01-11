@@ -157,4 +157,5 @@ if __name__ == '__main__':
     txt = 'pst_data.txt'
     pkl = 'pst_result.pkl'
     tree = gen_tree(txt)
+    # todo: 增加转移概率
     print(tree.root.children['t'].children['ct'].children)
