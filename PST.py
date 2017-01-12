@@ -67,7 +67,7 @@ class Tree(object):
                     node = self.root
 
                 if compute_pro(candidate_r, sequence) > self.P_min:
-                    # 此时candidate_r为出现概率大于P_min的候选节点
+                    # 此时candidate_r为出现概率大于P_min的候选节点,符合入树条件 TODO:对于严格意义上的PST,需要和gamma、alpha进行比较
                     # 切换支点
                     print("上次处理：", self.pre_node_len, "本次长度:", len(candidate_r))
                     if node is not self.root and (self.pre_node_len >= len(candidate_r)):
