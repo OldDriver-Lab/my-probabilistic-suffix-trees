@@ -1,3 +1,2 @@
 # my-probabilistic-suffix-trees
-Todo：完成概率后缀树
-已经实现后缀树的建造
+Todo：修正PST的入树条件，添加检测方法（已经实现PST）
