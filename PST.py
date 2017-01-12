@@ -92,7 +92,7 @@ class Tree(object):
             for candidate_r in candidate_list:
                 # 遍历候选字符列表
                 if candidate_r in dis_seq_list:
-                    print("又一次从根节点开始,树深需要置为1,同时node恢复为root")
+                    print("候选字符在去重列表中，表示又一次从根节点开始,树深需要置为1,同时node恢复为root")
                     self.current_deepth = 1
                     node = self.root
 
@@ -100,7 +100,8 @@ class Tree(object):
                     # 此时candidate_r为出现概率大于P_min的候选节点
                     # 切换支点
                     print("上次处理：", self.pre_node_len, "本次长度:", len(candidate_r))
-                    if node is not self.root and (self.pre_node_len > len(candidate_r)):  # 如果上一次保存候选序列的长度大于该序列长度，说明向上回溯
+                    if node is not self.root and (self.pre_node_len >= len(candidate_r)):
+                        # 如果上一次保存候选序列的长度大于该序列长度，说明此时节点需要向上回溯
                         node = node.pre_node
                     self.pre_node_len = len(candidate_r)
                     print("********符合条件:", candidate_r, "树深度:", len(candidate_r), "节点名：", node.name)
@@ -116,9 +117,9 @@ class Tree(object):
                         str_x_r = x + candidate_r
                         q.append(str_x_r)
                     # 此时获得的q，是通过合法候选字符（P>P_min）构造好的前缀数组
-                    print(candidate_r, q)
+                    print("当前字符：", candidate_r, " 候选序列：", q)
                     if len(candidate_r) < self.L:  # if self.current_deepth < self.L:
-                        # 树在本分支上的深度自增，步长为1 但此时用的是字符集长度计算
+                        # 树在本分支上的深度自增，步长为1；但此时用的是字符集长度计算 todo:如果表示一次行为的符号不是一个字母或符号，需要review
                         # self.current_deepth += 1
                         add_pst(node, sequence, q)
 
