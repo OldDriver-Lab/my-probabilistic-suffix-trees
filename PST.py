@@ -136,7 +136,20 @@ class Tree(object):
                     if len(candidate_r) < self.L:  # if self.current_deepth < self.L:
                         # 树在本分支上的深度自增，步长为1；但此时用的是字符集长度计算 todo:如果表示一次行为的符号不是一个字母或符号，需要review
                         # self.current_deepth += 1
+                        print("当前node：", node.name)
+                        print("probability_vector:", node.pre_node.probability_vector)
                         add_pst(node, sequence, q)
+                    else:
+                        # 不再向下深入，需要填充该节点概率向量
+                        # total_count为查找到的、以候选字符串作为后缀的字符串的数量
+                        total_count = 0
+                        for single_tag in dis_seq_list:
+                            find_str = node.name + single_tag
+                            total_count += find_str_count(find_str, TOTAL_SEQUENCE)
+                        for single_tag in dis_seq_list:
+                            node.probability_vector[single_tag] = float(
+                                find_str_count(node.name + single_tag, TOTAL_SEQUENCE)) / float(
+                                total_count)
 
         root_node = self.root
         add_pst(root_node, sequence, [])
@@ -190,9 +203,11 @@ def find_str_count(x, total_str):
         count += 1
     return count
 
+
 if __name__ == '__main__':
     txt = 'pst_data.txt'
     pkl = 'pst_result.pkl'
     tree = gen_tree(txt)
-    print(tree.root.children['a'].children['ca'].children['cca'].probability_vector)
+    print("------------------------------------------------------------------")
+    print(tree.root.children['t'].children['ct'].children['act'].probability_vector)
     print("------------------------------------------------------------------")
