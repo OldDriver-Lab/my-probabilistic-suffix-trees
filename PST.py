@@ -4,6 +4,7 @@ from random import choice
 
 '''构建概率后缀树
 '''
+TOTAL_SEQUENCE = ''
 
 
 class TreeNode(object):
@@ -12,7 +13,7 @@ class TreeNode(object):
         self.name = 'root'  # 标记node的名称
         self.children = {}
         self.totalchild = 0  # 统计node子节点个数
-        self.probability_vector = {}  # 概率向量
+        self.probability_vector = {}  # 转移概率向量
         self.pre_pv = {}  # 上一节点的概率向量s
         self.pre_node = None  # 上一节点
 
@@ -89,6 +90,20 @@ class Tree(object):
             if len(candidate_list) == 0:
                 # 如果是根节点传入，将候选节点设置为去重后的字符集
                 candidate_list = dis_seq_list
+                # 计算转移概率
+                for candidate_p in dis_seq_list:
+                    node.probability_vector[candidate_p] = compute_pro(candidate_p, sequence)
+            else:
+                # total_count为查找到的、以候选字符串作为后缀的字符串的数量
+                total_count = 0
+                for single_tag in dis_seq_list:
+                    find_str = node.name + single_tag
+                    total_count += find_str_count(find_str, TOTAL_SEQUENCE)
+                for single_tag in dis_seq_list:
+                    node.probability_vector[single_tag] = float(
+                        find_str_count(node.name + single_tag, TOTAL_SEQUENCE)) / float(
+                        total_count)
+
             for candidate_r in candidate_list:
                 # 遍历候选字符列表
                 if candidate_r in dis_seq_list:
@@ -128,35 +143,56 @@ class Tree(object):
 
 
 def compute_pro(s, total_sequence):
-    '''计算s在total_sequence_list中出现的概率'''
+    '''计算s在total_sequence中出现的概率'''
     return float(total_sequence.count(s)) / float(len(total_sequence.replace('$', '')))
 
 
-def get_suffix(seq, length, str):
+def compute_list_pro(s, sequence_list):
+    '''计算s在sequence_list出现的概率'''
+    return float(sequence_list.count(s)) / float(len(sequence_list))
+
+
+def get_suffix_list(seq, length, str):
     '''返回在str中，长度为1，起始字符为seq的字符串'''
     for i in range(length - 1):
         seq = seq + '.'
     result = re.findall(seq, str)
+    print(result)
     result = map(lambda x: x[-1], result)
+
     return list(result)
 
 
 def gen_tree(input_file):
     '''生成PST'''
     tree = Tree()
+    global TOTAL_SEQUENCE
     with open(input_file) as f:
-        total_sequence = ''
         for line in f:
             # 增加'$'用来区别是否是完整后缀  todo:PST是否需要？
             line = line.strip() + '$'
-            total_sequence += line
-        tree.build(total_sequence)
+            TOTAL_SEQUENCE += line
+        tree.build(TOTAL_SEQUENCE)
     return tree
 
+
+def find_str_count(x, total_str):
+    start = 0
+    count = 0
+    while True:
+        index = total_str.find(x, start)
+        # if search string not found, find() returns -1
+        # search is complete, break out of the while loop
+        if index == -1:
+            break
+        # move to next possible start position
+        start = index + 1
+        count += 1
+    return count
 
 if __name__ == '__main__':
     txt = 'pst_data.txt'
     pkl = 'pst_result.pkl'
     tree = gen_tree(txt)
-    # todo: 增加转移概率
-    print(tree.root.children['t'].children['ct'].children)
+    print(tree.root.children['a'].children['ca'].children['cca'].probability_vector)
+    print("------------------------------------------------------------------")
