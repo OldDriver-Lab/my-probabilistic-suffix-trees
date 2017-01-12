@@ -1,9 +1,10 @@
 # encoding:utf-8
 import re
-from random import choice
+from graphviz import Digraph
 
 '''构建概率后缀树
 '''
+TREE_PIC = Digraph(comment='The Probabilitic Suffix Tree')
 TOTAL_SEQUENCE = ''
 
 
@@ -45,9 +46,9 @@ class Tree(object):
             if len(candidate_list) == 0:
                 # 如果是根节点传入，将候选节点设置为去重后的字符集
                 candidate_list = dis_seq_list
-                # 计算转移概率
+                # 计算根节点概率向量，保留三位小数
                 for candidate_p in dis_seq_list:
-                    node.probability_vector[candidate_p] = compute_pro(candidate_p, sequence)
+                    node.probability_vector[candidate_p] = round(compute_pro(candidate_p, sequence), 3)
             else:
                 # total_count为查找到的、以候选字符串作为后缀的字符串的数量
                 total_count = 0
@@ -55,9 +56,10 @@ class Tree(object):
                     find_str = node.name + single_tag
                     total_count += find_str_count(find_str, TOTAL_SEQUENCE)
                 for single_tag in dis_seq_list:
-                    node.probability_vector[single_tag] = float(
+                    # 计算概率向量，保留三位小数
+                    node.probability_vector[single_tag] = round(float(
                         find_str_count(node.name + single_tag, TOTAL_SEQUENCE)) / float(
-                        total_count)
+                        total_count), 3)
 
             for candidate_r in candidate_list:
                 # 遍历候选字符列表
@@ -91,8 +93,8 @@ class Tree(object):
                     if len(candidate_r) < self.L:  # if self.current_deepth < self.L:
                         # 树在本分支上的深度自增，步长为1；但此时用的是字符集长度计算 todo:如果表示一次行为的符号不是一个字母或符号，需要review
                         # self.current_deepth += 1
-                        print("当前node：", node.name)
-                        print("probability_vector:", node.pre_node.probability_vector)
+                        # print("当前node：", node.name)
+                        # print("probability_vector:", node.pre_node.probability_vector)
                         add_pst(node, sequence, q)
                     else:
                         # 不再向下深入，需要填充该节点概率向量
@@ -102,9 +104,10 @@ class Tree(object):
                             find_str = node.name + single_tag
                             total_count += find_str_count(find_str, TOTAL_SEQUENCE)
                         for single_tag in dis_seq_list:
-                            node.probability_vector[single_tag] = float(
+                            # 计算概率向量，保留三位小数
+                            node.probability_vector[single_tag] = round(float(
                                 find_str_count(node.name + single_tag, TOTAL_SEQUENCE)) / float(
-                                total_count)
+                                total_count), 3)
 
         root_node = self.root
         add_pst(root_node, sequence, [])
@@ -118,17 +121,6 @@ def compute_pro(s, total_sequence):
 def compute_list_pro(s, sequence_list):
     '''计算s在sequence_list出现的概率'''
     return float(sequence_list.count(s)) / float(len(sequence_list))
-
-
-def get_suffix_list(seq, length, str):
-    '''返回在str中，长度为1，起始字符为seq的字符串'''
-    for i in range(length - 1):
-        seq = seq + '.'
-    result = re.findall(seq, str)
-    print(result)
-    result = map(lambda x: x[-1], result)
-
-    return list(result)
 
 
 def gen_tree(input_file):
@@ -159,6 +151,20 @@ def find_str_count(x, total_str):
     return count
 
 
+def draw_pst(tree):
+    '''绘制PST'''
+
+    def draw_node(node):
+        TREE_PIC.node(node.name, node.name + '\n' + str(node.probability_vector))
+        if node.children:
+            for key in node.children:
+                TREE_PIC.edge(node.name, key, constraint='true')
+                draw_node(node.children[key])
+
+    draw_node(tree.root)
+    TREE_PIC.render('test-output/PST.gv', view=True)
+
+
 if __name__ == '__main__':
     txt = 'pst_data.txt'
     pkl = 'pst_result.pkl'
@@ -166,3 +172,4 @@ if __name__ == '__main__':
     print("------------------------------------------------------------------")
     print(tree.root.children['t'].children['ct'].children['act'].probability_vector)
     print("------------------------------------------------------------------")
+    draw_pst(tree)
