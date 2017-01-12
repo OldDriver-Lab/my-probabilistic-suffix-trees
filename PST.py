@@ -18,51 +18,6 @@ class TreeNode(object):
         self.pre_node = None  # 上一节点
 
 
-class Tree2(object):
-    def __init__(self):
-        self.root = TreeNode()
-        self.P_min = 0.00  # 入树概率阈值
-        self.gamma = 0.01  # 节点转移概率阈值
-        self.alpha = 0.01  # 另一个阈值 在判断候选节点时起作用
-        self.L = 2  # 树最大深度
-        self.deepth = 0  # 树深度
-
-    def build(self, sequence):
-        print("------------------ line:", sequence, " ------------------")
-        node = self.root
-        seq_list = list(sequence)
-        dis_seq_list = list(set(seq_list))
-        dis_seq_list.sort(key=list(sequence).index)
-        for i in range(self.L):
-            # 此时获取到去重后的字符数组，c为单个字符
-            for c in dis_seq_list:
-                if compute_pro(c, seq_list) > self.P_min:  # 第一步验证候选节点，如果频率超过P_min，则作为候选节点
-                    if c not in node.children:  # c不在子节点中
-                        for b in dis_seq_list:  # 生成该节点的pre_pv list
-                            node.pre_pv[b] = compute_pro(b, seq_list)
-                        print("pre_pv", node.pre_pv)
-                        s = c
-                        print("候选节点：", s)
-                        s_suffix_list = get_suffix(s, 2, sequence)
-
-                        # 判断当前候选节点s是否符合入选条件
-                        for sigma in dis_seq_list:
-                            sigma_pro = compute_pro(sigma, s_suffix_list)
-                            if sigma_pro > self.gamma:  # 存在一个sigma属于Σ，P(sigma|s)>gamma
-                                print("sigma", sigma, "sigma_pro:", sigma_pro)
-                                if sigma_pro / node.pre_pv[sigma] > self.alpha or sigma_pro / node.pre_pv[
-                                    sigma] > 1 / self.alpha:
-                                    # 同时满足条件P(sigma|s)/P(sigma|suff(s))>alpha or P(sigma|s)/P(sigma|suff(s))<(1/alpha)
-                                    print(s, '满足新建节点条件')
-                                    child = TreeNode()  # 满足条件后，添加该节点到树中
-                                    node.children[s] = child
-                                    node = child
-                                    self.deepth += 1
-                                    break
-                        print('self.deepth', self.deepth)
-                        print("-----------------------ok-----------------------")
-
-
 class Tree(object):
     def __init__(self):
         self.root = TreeNode()
