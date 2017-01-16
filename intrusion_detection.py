@@ -1,4 +1,5 @@
 import PST
+from Util import Properties
 
 μ_min = 0.5
 lambda_min = 0.6  # 计算异常度阈值
@@ -54,3 +55,4 @@ if __name__ == '__main__':
     print('----------------------------------计算异常度-------------------------------')
     for sequence in sequence_list:
         detection_sequence(sequence, tree)
+    ope_code_dict = Properties("opecode_mapper.properties").getProperties()

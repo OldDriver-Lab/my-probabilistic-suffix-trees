@@ -25,7 +25,7 @@ class Tree(object):
         self.P_min = 0.00  # 入树概率阈值
         self.gamma = 0.01  # 节点转移概率阈值
         self.alpha = 0.01  # 另一个阈值 在判断候选节点时起作用
-        self.L = 5  # 树最大深度L，即L阶PST
+        self.L = 3  # 树最大深度L，即L阶PST
         self.current_deepth = 1  # 当前树深度
         self.pre_node_len = 0  # 判断叶节点是否向上回溯，该值为上一次处理序列的长度
 
