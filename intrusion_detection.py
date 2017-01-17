@@ -50,9 +50,17 @@ if __name__ == '__main__':
     txt = 'pst_data.txt'
     pkl = 'pst_result.pkl'
     tree = PST.gen_tree(txt)
-    PST.draw_pst(tree)
+    # PST.draw_pst(tree)
     sequence_list = ["abrabr", "abcabc"]
     print('----------------------------------计算异常度-------------------------------')
     for sequence in sequence_list:
         detection_sequence(sequence, tree)
+
+    # test operatecode mapping
+    source_code_list = ['login', 'trans1', 'trans2', 'trans3', 'logout']
     ope_code_dict = Properties("opecode_mapper.properties").getProperties()
+    str_transed = ""
+    for source_code in source_code_list:
+        if ope_code_dict.get(source_code):
+            str_transed += ope_code_dict.get(source_code)
+    print(str_transed)
