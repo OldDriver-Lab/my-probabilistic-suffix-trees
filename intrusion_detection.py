@@ -38,8 +38,9 @@ def detection_sequence(sequence, pst_tree):
             pro = node.probability_vector[current_tag]
         else:
             pro = 0
-        if pro < μ_min:  # 超过阈值，判断为非法序列
+        if pro < μ_min:  # 判断为非法序列
             count_intrusion += 1
+        print(pro)
     if (count_intrusion / N) > lambda_min:
         print("该序列:%s异常！" % sequence, "异常度:", count_intrusion / N)
     else:
@@ -50,8 +51,8 @@ if __name__ == '__main__':
     txt = 'pst_data.txt'
     pkl = 'pst_result.pkl'
     tree = PST.gen_tree(txt)
-    # PST.draw_pst(tree)
-    sequence_list = ["abrabr", "abcabc"]
+    PST.draw_pst(tree)
+    sequence_list = ["abcab", "bcabbbca"]
     print('----------------------------------计算异常度-------------------------------')
     for sequence in sequence_list:
         detection_sequence(sequence, tree)
